@@ -4,6 +4,9 @@ import logging
 import numpy as np
 import pandas as pd
 
+from ml.config import FEATURE_NAMES, PER_PLANET_FEATURES, PLANET_MAX_NUM
+from itertools import islice
+
 logging.basicConfig(level=os.getenv('LOG_LEVEL', logging.DEBUG))
 logger = logging.getLogger(__name__)
 
@@ -11,9 +14,12 @@ VALIDATION_MESSAGE = 'Step: {step_num}, cross val loss {cv_loss} training loss {
 
 
 class TrainingHelper:
+    name = 'starter'
+
     TRAINING_DATA_SPLIT = 0.85
 
-    def __init__(self, model, parser, model_dir, training_data_dir, model_file_name, data_dir, max_num_replays, checkpoint_step_num=5000):
+    def __init__(self, model, parser, model_dir, training_data_dir, model_file_name, data_dir, max_num_replays,
+                 checkpoint_step_num=5000):
         self._checkpoint_step_num = checkpoint_step_num
         self._model = model
         self._parser = parser
@@ -24,12 +30,22 @@ class TrainingHelper:
         self._max_num_replays = max_num_replays
 
     def fit(self, num_steps, minibatch_size, loss_step_num):
+        X = []
+        y = []
         epoch_training_loss = []
 
         game_data = self.load_data()
-        game_data = game_data[:self._max_num_replays]
+        game_data = islice(game_data, 0, self._max_num_replays)
 
-        X, y = self._parser.parse(game_data)
+        env_history = self._parser.parse(game_data)
+
+        for env_step in env_history:
+            X.append(self.format_observation(env_step['observation']))
+            y.append(self.format_target(env_step['allocations']))
+
+        X = np.array(X)
+        y = np.array(y)
+
         train_X, train_y, val_X, val_y = self.split_data(X, y)
 
         for step_num in range(num_steps):
@@ -48,8 +64,7 @@ class TrainingHelper:
         self.save_training_stats(training_stats)
 
     def load_data(self):
-        training_data = []
-
+        num_replays = 0
         game_files = os.listdir(self._replay_dir)
         for game_file in game_files:
             file_path = os.path.join(self._replay_dir, game_file)
@@ -65,10 +80,10 @@ class TrainingHelper:
                 except json.JSONDecodeError:
                     logger.warning('Failed to load file %s', file_path)
                     continue
-                training_data.append(game_data)
+                num_replays += 1
+                yield game_data
 
-        logger.info('Found %s replays', len(training_data))
-        return training_data
+        logger.info('Found %s replays', num_replays)
 
     def _is_replay_file(self, file_path):
         file_name = os.path.basename(file_path)
@@ -104,3 +119,19 @@ class TrainingHelper:
         start = (step_num * minibatch_size) % len(X)
         end = start + minibatch_size
         return X[start:end], y[start:end]
+
+    def format_target(self, target):
+        output = [0] * PLANET_MAX_NUM
+        for planet_id, p in target.items():
+            output[int(planet_id)] = p
+        return np.array(output)
+
+    def format_observation(self, observation):
+        features_matrix = []
+        for planet_id in range(PLANET_MAX_NUM):
+            if str(planet_id) in observation:
+                features_matrix.append(observation[str(planet_id)])
+            else:
+                features_matrix.append([0] * PER_PLANET_FEATURES)
+
+        return np.array(features_matrix)

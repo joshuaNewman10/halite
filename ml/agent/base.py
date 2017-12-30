@@ -10,7 +10,7 @@ Assignment = namedtuple('assignment', ('ship', 'planet'))
 class Agent:
     name = 'agent'
 
-    def __init__(self, max_allowed_time_seconds=1.2, max_ship_corrections=180):
+    def __init__(self, max_allowed_time_seconds=2.0, max_ship_corrections=180):
         self.max_allowed_time_seconds = max_allowed_time_seconds
         self.max_ship_corrections = max_ship_corrections
 

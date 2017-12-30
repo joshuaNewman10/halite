@@ -6,38 +6,48 @@ from ml.util import distance2, distance
 
 
 class QlearnParser(Parser):
+    name = 'qlearn'
+
     def _get_discrete_allocations(self, allocations):
         for planet_id, allocation in allocations.items():
-            allocations[planet_id] = round(allocation, 1)
+            allocations[planet_id] = round(allocation, 2)
 
         return allocations
 
-    def _get_frame_reward(self, frame):
+    def _get_frame_reward(self, frame, bot_to_imitate_id):
         planets = frame['planets']
         ships = frame['ships']
 
-    def _get_planet_reward(self, planets):
-        pass
+        return self._get_planet_reward(planets, bot_to_imitate_id) + self._get_ship_reward(ships, bot_to_imitate_id)
 
-    def _get_ship_reward(self, ships):
-        pass
+    def _get_planet_reward(self, planets, bot_to_imitate_id):
+        planets = [planet for planet in planets.values() if planet['owner'] == bot_to_imitate_id]
+        return len(planets)
 
-    def parse_game(self, json_data):
+    def _get_ship_reward(self, ships, bot_to_imitate_id):
+        bot_ships = ships[bot_to_imitate_id]
+        return len(bot_ships)
+
+    def parse_game(self, json_data, bot_to_imitate=None):
+        game_training_data = []
+        observations = []
+
         frames = json_data['frames']
         moves = json_data['moves']
         width = json_data['width']
         height = json_data['height']
 
-        winner = self.find_winner(json_data)
-        bot_to_imitate = json_data['player_names'][int(winner)]
+        if not bot_to_imitate:
+            winner = self.find_winner(json_data)
+            bot_to_imitate = json_data['player_names'][int(winner)]
+
         print("Bot to imitate: {}.".format(bot_to_imitate))
         # We train on all the games of the bot regardless whether it won or not.
         bot_to_imitate_id = str(json_data['player_names'].index(bot_to_imitate))
 
-        game_training_data = []
-
         # Ignore the last frame, no decision to be made there
-        for idx in range(len(frames) - 1):
+        # Ignore the first
+        for idx in range(0, len(frames) - 1):
             current_moves = moves[idx]
             current_frame = frames[idx]
 
@@ -132,7 +142,25 @@ class QlearnParser(Parser):
                     average_distance,
                     is_active]
 
+            reward = self._get_frame_reward(current_frame, bot_to_imitate_id)
             allocations = self._get_discrete_allocations(allocations)
-            game_training_data.append((planet_features, allocations))
+
+            current_observation = planet_features
+
+            # skip over first frame
+            if not observations:
+                observations.append(current_observation)
+                continue
+
+            previous_observation = observations[-1]
+
+            frame_data = dict(
+                next_observation=current_observation,
+                observation=previous_observation,
+                reward=reward,
+                allocations=allocations
+            )
+
+            game_training_data.append(frame_data)
 
         return game_training_data

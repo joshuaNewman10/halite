@@ -6,6 +6,8 @@ from ml.util import distance2, distance
 
 
 class StarterParser(Parser):
+    name = 'starter'
+
     def parse(self, all_games_json_data, bot_to_imitate=None):
         """
         Parse the games to compute features. This method computes PER_PLANET_FEATURES features for each planet in each frame

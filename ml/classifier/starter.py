@@ -9,15 +9,14 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '99'
 tf.logging.set_verbosity(tf.logging.ERROR)
 
 
-class StarterNet(Classifier):
+class Starter(Classifier):
     name = 'starter'
 
-    FIRST_LAYER_SIZE = 24
-    SECOND_LAYER_SIZE = 12
-    THIRD_LAYER_SIZE = 6
+    FIRST_LAYER_SIZE = 12
+    SECOND_LAYER_SIZE = 6
 
     def __init__(self, model_dir=None, model_file=None):
-        super(StarterNet, self).__init__(model_dir)
+        super(Starter, self).__init__(model_dir)
 
         self._graph = tf.Graph()
 
@@ -45,12 +44,11 @@ class StarterNet(Classifier):
 
             first_layer = tf.contrib.layers.fully_connected(inputs=flattened_frames, num_outputs=self.FIRST_LAYER_SIZE)
             second_layer = tf.contrib.layers.fully_connected(inputs=first_layer, num_outputs=self.SECOND_LAYER_SIZE)
-            third_layer = tf.contrib.layers.fully_connected(inputs=second_layer, num_outputs=self.THIRD_LAYER_SIZE)
-            fourth_layer = tf.contrib.layers.fully_connected(inputs=third_layer, num_outputs=1,
+            third_layer = tf.contrib.layers.fully_connected(inputs=second_layer, num_outputs=1,
                                                              activation_fn=None)  # linear activation
 
             # group planets back in frames
-            logits = tf.reshape(fourth_layer, [-1, PLANET_MAX_NUM])
+            logits = tf.reshape(third_layer, [-1, PLANET_MAX_NUM])
 
             self._prediction_normalized = tf.nn.softmax(logits)
 
