@@ -1,15 +1,14 @@
 import os
 import tensorflow as tf
-import numpy as np
 
 from ml.config import PLANET_MAX_NUM, PER_PLANET_FEATURES
-from ml.classifier.base import Classifier
+from ml.classifier.starter import StarterNet
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '99'
 tf.logging.set_verbosity(tf.logging.ERROR)
 
 
-class QlearnNet(Classifier):
+class QlearnNet(StarterNet):
     name = 'qlearn'
 
     FIRST_LAYER_SIZE = 24
@@ -63,52 +62,3 @@ class QlearnNet(Classifier):
                 self._saver.restore(self._session, model_file)
             else:
                 self._session.run(tf.global_variables_initializer())
-
-    def fit(self, X, y):
-        loss, optimizer = self._session.run(
-            fetches=[self._loss, self._optimizer],
-            feed_dict={
-                self._features: self._normalize_input(X),
-                self._target_distribution: y}
-        )
-
-        return loss
-
-    def predict(self, X):
-        predictions = self._session.run(
-            fetches=self._prediction_normalized,
-            feed_dict={
-                self._features: self._normalize_input(np.array([X]))
-            }
-        )
-
-        return predictions[0]
-
-    def compute_loss(self, X, y):
-        return self._session.run(
-            fetches=self._loss,
-            feed_dict={
-                self._features: self._normalize_input(X),
-                self._target_distribution: y
-            }
-        )
-
-    def save(self, file_name):
-        file_path = os.path.join(self.model_dir, file_name)
-        self._saver.save(self._session, file_path)
-
-    def _normalize_input(self, X):
-        shape = X.shape
-
-        if len(shape) != 3:
-            raise ValueError()
-
-        if shape[1] != PLANET_MAX_NUM:
-            raise ValueError()
-
-        if shape[2] != PER_PLANET_FEATURES:
-            raise ValueError()
-
-        mean = np.expand_dims(X.mean(axis=1), axis=1)
-        std = np.expand_dims(X.std(axis=1), axis=1)
-        return (X - mean) / (std + 1e-6)  # avoid div 0 error

@@ -2,13 +2,13 @@ import os
 import tensorflow as tf
 
 from ml.config import PLANET_MAX_NUM, PER_PLANET_FEATURES
-from ml.classifier.starter import Starter
+from ml.classifier.starter import StarterNet
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '99'
 tf.logging.set_verbosity(tf.logging.ERROR)
 
 
-class AugmentedStarter(Starter):
+class AugmentedStarterNet(StarterNet):
     name = 'augmented_starter'
 
     FIRST_LAYER_SIZE = 24
@@ -16,7 +16,7 @@ class AugmentedStarter(Starter):
     THIRD_LAYER_SIZE = 6
 
     def __init__(self, model_dir=None, model_file=None):
-        super(AugmentedStarter, self).__init__(model_dir)
+        super(AugmentedStarterNet, self).__init__(model_dir)
 
         self._graph = tf.Graph()
 

@@ -9,14 +9,14 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '99'
 tf.logging.set_verbosity(tf.logging.ERROR)
 
 
-class Starter(Classifier):
+class StarterNet(Classifier):
     name = 'starter'
 
     FIRST_LAYER_SIZE = 12
     SECOND_LAYER_SIZE = 6
 
     def __init__(self, model_dir=None, model_file=None):
-        super(Starter, self).__init__(model_dir)
+        super(StarterNet, self).__init__(model_dir)
 
         self._graph = tf.Graph()
 

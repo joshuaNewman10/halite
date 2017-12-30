@@ -28,13 +28,8 @@ class StarterParser(Parser):
         for json_data in all_games_json_data:
             training_data.append(self._parse_game(json_data))
 
-        if not training_data:
-            raise Exception("Didn't find any matching games. Try different bot.")
 
-        self.serialize_data(training_data)
-        flat_training_data = [item for sublist in training_data for item in sublist]
-        print("Data parsed, parsed {} games, total frames: {}".format(len(training_data), len(flat_training_data)))
-        return self.format_data_for_training(flat_training_data)
+        return training_data
 
     def _parse_game(self, json_data):
         frames = json_data['frames']

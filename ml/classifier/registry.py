@@ -1,9 +1,9 @@
-from ml.classifier.starter import Starter
-from ml.classifier.augmented_starter import AugmentedStarter
+from ml.classifier.starter import StarterNet
+from ml.classifier.augmented_starter import AugmentedStarterNet
 from ml.classifier.qlearn import QlearnNet
 
 CLASSIFIER_REGISTRY = {
-    Starter.name: Starter,
+    StarterNet.name: StarterNet,
     QlearnNet.name: QlearnNet,
-    AugmentedStarter.name: AugmentedStarter
+    AugmentedStarterNet.name: AugmentedStarterNet
 }
