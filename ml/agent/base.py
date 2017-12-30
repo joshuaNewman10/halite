@@ -19,7 +19,7 @@ class Agent:
         ship_commands = self.get_ship_commands(game_map, ship_planet_assignments, round_start_time)
         return ship_commands
 
-    def get_ship_planet_assignments(self, game_map, _):
+    def get_ship_planet_assignments(self, game_map, predictions=None):
         assignments = []
 
         undocked_ships = self.get_undocked_ships(game_map)
@@ -40,6 +40,8 @@ class Agent:
             planet = assignment.planet
 
             commands.append(self.get_ship_command(ship, planet, game_map, round_start_time))
+
+        return commands
 
     def get_ship_command(self, ship, planet, game_map, round_start_time):
         speed = hlt.constants.MAX_SPEED

@@ -1,12 +1,13 @@
 import heapq
 
-from ml.agent.base import Agent
+from ml.agent.base import Agent, Assignment
 from ml.config import PLANET_MAX_NUM, PER_PLANET_FEATURES
 from ml.util import distance
 
 
+
 class StarterAgent(Agent):
-    name = 'agent'
+    name = 'starter'
 
     def __init__(self, model):
         super(StarterAgent, self).__init__()
@@ -19,7 +20,7 @@ class StarterAgent(Agent):
         ship_commands = self.get_ship_commands(game_map, ship_planet_assignments, round_start_time)
         return ship_commands
 
-    def get_ship_planet_assignments(self, game_map, predictions):
+    def get_ship_planet_assignments(self, game_map, predictions=None):
         """
         Given the predictions from the neural net, create assignment (undocked ship -> planet) deciding which
         planet each ship should go to. Note that we already know how many ships is going to each planet
@@ -32,7 +33,7 @@ class StarterAgent(Agent):
         undocked_ships = self.get_undocked_ships(game_map)
 
         # greedy assignment
-        assignment = []
+        assignments = []
         number_of_ships_to_assign = len(undocked_ships)
 
         if number_of_ships_to_assign == 0:
@@ -67,11 +68,14 @@ class StarterAgent(Agent):
                 _, best_ship_id = heapq.heappop(ship_heaps[best_planet_id])
 
             # Assign the best ship to the best planet.
-            assignment.append(
-                (game_map.get_me().get_ship(best_ship_id), game_map.get_planet(best_planet_id)))
+            assignments.append(Assignment(
+                ship=game_map.get_me().get_ship(best_ship_id),
+                planet=game_map.get_planet(best_planet_id))
+            )
+
             already_assigned_ships.add(best_ship_id)
 
-        return assignment
+        return assignments
 
     def produce_features(self, game_map):
         """

@@ -5,36 +5,24 @@ from ml.parser.base import Parser
 from ml.util import distance2, distance
 
 
-class StarterParser(Parser):
-    def parse(self, all_games_json_data, bot_to_imitate=None):
-        """
-        Parse the games to compute features. This method computes PER_PLANET_FEATURES features for each planet in each frame
-        in each game the bot we're imitating played.
+class QlearnParser(Parser):
+    def _get_discrete_allocations(self, allocations):
+        for planet_id, allocation in allocations.items():
+            allocations[planet_id] = round(allocation, 1)
 
-        :param all_games_json_data: list of json dictionaries describing games
-        :param bot_to_imitate: name of the bot to imitate or None if we want to imitate the bot who won the most games
-        :return: replays ready for training
-        """
-        print("Parsing replays...")
-        training_data = []
+        return allocations
 
-        if bot_to_imitate is None:
-            print("No bot name provided, choosing the bot with the highest number of games won...")
-            bot_to_imitate = self.get_best_bot(all_games_json_data)
+    def _get_frame_reward(self, frame):
+        planets = frame['planets']
+        ships = frame['ships']
 
-        print("Bot to imitate: {}.".format(bot_to_imitate))
-        for json_data in all_games_json_data:
-            training_data.append(self._parse_game(json_data))
+    def _get_planet_reward(self, planets):
+        pass
 
-        if not training_data:
-            raise Exception("Didn't find any matching games. Try different bot.")
+    def _get_ship_reward(self, ships):
+        pass
 
-        self.serialize_data(training_data)
-        flat_training_data = [item for sublist in training_data for item in sublist]
-        print("Data parsed, parsed {} games, total frames: {}".format(len(training_data), len(flat_training_data)))
-        return self.format_data_for_training(flat_training_data)
-
-    def _parse_game(self, json_data):
+    def parse_game(self, json_data):
         frames = json_data['frames']
         moves = json_data['moves']
         width = json_data['width']
@@ -50,7 +38,6 @@ class StarterParser(Parser):
 
         # Ignore the last frame, no decision to be made there
         for idx in range(len(frames) - 1):
-
             current_moves = moves[idx]
             current_frame = frames[idx]
 
@@ -145,6 +132,7 @@ class StarterParser(Parser):
                     average_distance,
                     is_active]
 
+            allocations = self._get_discrete_allocations(allocations)
             game_training_data.append((planet_features, allocations))
 
         return game_training_data

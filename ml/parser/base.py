@@ -10,9 +10,49 @@ class Parser:
     def __init__(self, data_dir):
         self._data_dir = data_dir
 
-    @abstractmethod
     def parse(self, all_games_json_data, bot_to_imitate=None):
+        """
+        Parse the games to compute features. This method computes PER_PLANET_FEATURES features for each planet in each frame
+        in each game the bot we're imitating played.
+
+        :param all_games_json_data: list of json dictionaries describing games
+        :param bot_to_imitate: name of the bot to imitate or None if we want to imitate the bot who won the most games
+        :return: replays ready for training
+        """
+        print("Parsing replays...")
+        training_data = []
+
+        if bot_to_imitate is None:
+            print("No bot name provided, choosing the bot with the highest number of games won...")
+            bot_to_imitate = self.get_best_bot(all_games_json_data)
+
+        print("Bot to imitate: {}.".format(bot_to_imitate))
+        for json_data in all_games_json_data:
+            training_data.append(self.parse_game(json_data))
+
+        if not training_data:
+            raise Exception("Didn't find any matching games. Try different bot.")
+
+        self.serialize_data(training_data)
+        flat_training_data = [item for sublist in training_data for item in sublist]
+        print("Data parsed, parsed {} games, total frames: {}".format(len(training_data), len(flat_training_data)))
+        return self.format_data_for_training(flat_training_data)
+
+    @abstractmethod
+    def parse_game(self, json_data):
         raise NotImplementedError()
+
+    def get_best_bot(self, all_games_json_data):
+        players_games_count = {}
+        for json_data in all_games_json_data:
+            w = self.find_winner(json_data)
+            p = json_data['player_names'][int(w)]
+            if p not in players_games_count:
+                players_games_count[p] = 0
+            players_games_count[p] += 1
+
+        bot_to_imitate = max(players_games_count, key=players_games_count.get)
+        return bot_to_imitate
 
     def find_winner(self, data):
         for player, stats in data['stats'].items():

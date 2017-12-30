@@ -1,3 +1,4 @@
+
 import os
 import tensorflow as tf
 import numpy as np
@@ -9,7 +10,7 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '99'
 tf.logging.set_verbosity(tf.logging.ERROR)
 
 
-class StarterNet(Classifier):
+class QlearnNet(Classifier):
     name = 'starter'
 
     FIRST_LAYER_SIZE = 24
@@ -17,7 +18,7 @@ class StarterNet(Classifier):
     THIRD_LAYER_SIZE = 6
 
     def __init__(self, model_dir=None, model_file=None):
-        super(StarterNet, self).__init__(model_dir)
+        super(QlearnNet, self).__init__(model_dir)
 
         self._graph = tf.Graph()
 
