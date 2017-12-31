@@ -21,12 +21,22 @@ class QlearnParser(Parser):
         return self._get_planet_reward(planets, bot_to_imitate_id) + self._get_ship_reward(ships, bot_to_imitate_id)
 
     def _get_planet_reward(self, planets, bot_to_imitate_id):
-        planets = [planet for planet in planets.values() if planet['owner'] == bot_to_imitate_id]
-        return len(planets)
+        bot_planets = [planet for planet in planets.values() if planet['owner'] == bot_to_imitate_id]
+        opponent_planets = [planet for planet in planets.values() if planet['owner'] != bot_to_imitate_id]
+
+        return len(bot_planets) / float(len(opponent_planets))
 
     def _get_ship_reward(self, ships, bot_to_imitate_id):
         bot_ships = ships[bot_to_imitate_id]
-        return len(bot_ships)
+        opponent_ships = []
+
+        for ship_owner_id in ships:
+            if ship_owner_id == bot_to_imitate_id:
+                continue
+
+            opponent_ships += ships[ship_owner_id]
+
+        return len(bot_ships) / float(len(opponent_ships))
 
     def parse_game(self, json_data, bot_to_imitate=None):
         game_training_data = []

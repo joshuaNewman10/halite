@@ -4,7 +4,7 @@ import logging
 import numpy as np
 import pandas as pd
 
-from ml.config import FEATURE_NAMES, PER_PLANET_FEATURES, PLANET_MAX_NUM
+from ml.config import PER_PLANET_FEATURES, PLANET_MAX_NUM
 from itertools import islice
 
 logging.basicConfig(level=os.getenv('LOG_LEVEL', logging.DEBUG))
@@ -91,7 +91,12 @@ class TrainingHelper:
 
     def save(self, model_name, step_num):
         step_num = str(step_num)
-        model_path = os.path.join(self._model_dir, model_name + '_' + step_num)
+        model_dir = os.path.join(self._model_dir, model_name)
+
+        if not os.path.exists(model_dir):
+            os.makedirs(model_dir)
+
+        model_path = os.path.join(model_dir, model_name + '_' + step_num)
         self._model.save(model_path)
 
     def get_training_stats_plot(self, epoch_training_loss):

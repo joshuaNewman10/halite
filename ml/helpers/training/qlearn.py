@@ -58,6 +58,7 @@ class QlearningTrainingHelper(TrainingHelper):
                 epoch_training_loss.append((step_num, training_loss, validation_loss))
 
             if step_num % self._checkpoint_step_num == 0 or step_num == num_steps - 1:
+                logger.info('Saving model at step %s', step_num)
                 self.save(self._model_file_name, step_num)
 
         training_stats = self.get_training_stats_plot(epoch_training_loss)

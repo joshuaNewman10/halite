@@ -1,3 +1,4 @@
+import logging
 import heapq
 
 from ml.agent.base import Agent, Assignment

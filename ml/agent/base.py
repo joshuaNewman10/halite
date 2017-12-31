@@ -1,5 +1,6 @@
 import hlt
 import random
+import logging
 import time
 
 from collections import namedtuple
@@ -10,13 +11,20 @@ Assignment = namedtuple('assignment', ('ship', 'planet'))
 class Agent:
     name = 'agent'
 
-    def __init__(self, max_allowed_time_seconds=2.0, max_ship_corrections=180):
+    def config_logging(self):
+        log_file = "{}_{}.log".format(self.name, str(time.time()))
+        logging.basicConfig(filename=log_file, level=logging.DEBUG, filemode='w')
+        logging.info("Initialized bot {}".format(self.name))
+
+    def __init__(self, max_allowed_time_seconds=2.0, max_ship_corrections=50):
         self.max_allowed_time_seconds = max_allowed_time_seconds
         self.max_ship_corrections = max_ship_corrections
+        self.config_logging()
 
     def get_commands(self, game_map, round_start_time):
         ship_planet_assignments = self.get_ship_planet_assignments(game_map)
         ship_commands = self.get_ship_commands(game_map, ship_planet_assignments, round_start_time)
+        logging.debug('Assignments %s', ship_planet_assignments)
         return ship_commands
 
     def get_ship_planet_assignments(self, game_map, predictions=None):
