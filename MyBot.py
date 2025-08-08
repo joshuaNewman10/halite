@@ -3,9 +3,9 @@ from ml.classifier.registry import CLASSIFIER_REGISTRY
 from ml.runner.base import GameRunner
 
 
-AGENT_NAME = 'starter'
+AGENT_NAME = 'mammoth'
 MODEL_FILE = '/Users/jnewman/Projects/Banjo/halite/scripts/models/josh_bot_ckpt_0'
-CLASSIFIER_NAME = 'augmented_starter'
+CLASSIFIER_NAME = 'augmented_mammoth'
 
 
 def main(agent_name, classifier_name, model_file):
